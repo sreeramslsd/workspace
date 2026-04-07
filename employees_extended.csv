@@ -1,0 +1,11 @@
+name,skill,department,capacity_hours,allocated_hours,experience_years,performance_score
+siri,Python,Data Science,40,32,5,4.2
+jeevana,Java,Backend,40,38,4,3.8
+sireesh,JavaScript,Frontend,40,25,3,3.5
+pandu,Python,Data Science,40,18,6,4.5
+sanjay,Java,Backend,40,36,7,3.9
+mahendar,SQL,Analytics,40,22,5,4.0
+krishna,C#,Backend,40,30,4,4.1
+ammu,Java,Backend,40,28,3,3.7
+malathi,Python,Data Science,40,20,5,4.3
+shankar,JavaScript,Frontend,40,34,6,4.4

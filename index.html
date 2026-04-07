@@ -1,0 +1,852 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Workforce Risk Platform</title>
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #0a0c10;
+      --surface: #111318;
+      --surface2: #181c24;
+      --border: rgba(255,255,255,0.07);
+      --border2: rgba(255,255,255,0.12);
+      --text: #f0f2f7;
+      --text2: #8b91a0;
+      --text3: #545b6b;
+      --accent: #4f7dff;
+      --accent2: #7c5cfc;
+      --red: #ff4d6a;
+      --amber: #ffb547;
+      --green: #3dd68c;
+      --teal: #2dd4bf;
+      --purple: #a78bfa;
+    }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'DM Sans', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    /* Grid background */
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image:
+        linear-gradient(rgba(79,125,255,0.04) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(79,125,255,0.04) 1px, transparent 1px);
+      background-size: 48px 48px;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .layout { position: relative; z-index: 1; display: flex; min-height: 100vh; }
+
+    /* ── Sidebar ── */
+    .sidebar {
+      width: 220px;
+      flex-shrink: 0;
+      background: var(--surface);
+      border-right: 1px solid var(--border);
+      display: flex;
+      flex-direction: column;
+      padding: 24px 0;
+      position: sticky;
+      top: 0;
+      height: 100vh;
+      overflow-y: auto;
+    }
+    .logo {
+      padding: 0 20px 28px;
+      border-bottom: 1px solid var(--border);
+      margin-bottom: 16px;
+    }
+    .logo-mark {
+      width: 36px; height: 36px;
+      background: linear-gradient(135deg, var(--accent), var(--accent2));
+      border-radius: 10px;
+      display: flex; align-items: center; justify-content: center;
+      margin-bottom: 12px;
+    }
+    .logo-mark svg { width: 20px; height: 20px; fill: white; }
+    .logo-name { font-family: 'Syne', sans-serif; font-size: 13px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: var(--text); }
+    .logo-sub { font-size: 11px; color: var(--text3); margin-top: 2px; }
+
+    .nav-section { padding: 0 12px; margin-bottom: 4px; }
+    .nav-label { font-size: 10px; font-weight: 600; letter-spacing: 0.12em; text-transform: uppercase; color: var(--text3); padding: 8px 8px 6px; }
+    .nav-item {
+      display: flex; align-items: center; gap: 10px;
+      padding: 9px 10px;
+      border-radius: 8px;
+      font-size: 13px;
+      color: var(--text2);
+      cursor: pointer;
+      transition: all 0.15s;
+      border: 1px solid transparent;
+      margin-bottom: 2px;
+    }
+    .nav-item:hover { background: var(--surface2); color: var(--text); }
+    .nav-item.active {
+      background: rgba(79,125,255,0.12);
+      color: var(--accent);
+      border-color: rgba(79,125,255,0.2);
+    }
+    .nav-item svg { width: 15px; height: 15px; flex-shrink: 0; }
+    .nav-badge {
+      margin-left: auto;
+      background: rgba(255,77,106,0.15);
+      color: var(--red);
+      font-size: 10px;
+      font-weight: 600;
+      padding: 2px 6px;
+      border-radius: 20px;
+    }
+
+    .sidebar-footer {
+      margin-top: auto;
+      padding: 16px 20px 0;
+      border-top: 1px solid var(--border);
+    }
+    .status-dot { width: 7px; height: 7px; background: var(--green); border-radius: 50%; display: inline-block; margin-right: 6px; box-shadow: 0 0 6px var(--green); }
+    .sidebar-footer span { font-size: 12px; color: var(--text3); }
+
+    /* ── Main ── */
+    .main { flex: 1; overflow-y: auto; }
+
+    /* ── Topbar ── */
+    .topbar {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 18px 32px;
+      border-bottom: 1px solid var(--border);
+      background: rgba(10,12,16,0.8);
+      backdrop-filter: blur(12px);
+      position: sticky; top: 0; z-index: 10;
+    }
+    .topbar-left { display: flex; flex-direction: column; }
+    .topbar-title { font-family: 'Syne', sans-serif; font-size: 20px; font-weight: 700; }
+    .topbar-sub { font-size: 12px; color: var(--text3); margin-top: 2px; }
+    .topbar-right { display: flex; align-items: center; gap: 10px; }
+    .btn {
+      display: inline-flex; align-items: center; gap: 7px;
+      padding: 8px 16px;
+      border-radius: 8px;
+      font-size: 13px; font-weight: 500;
+      cursor: pointer;
+      transition: all 0.15s;
+      font-family: 'DM Sans', sans-serif;
+    }
+    .btn-ghost { background: transparent; border: 1px solid var(--border2); color: var(--text2); }
+    .btn-ghost:hover { border-color: rgba(255,255,255,0.25); color: var(--text); }
+    .btn-primary { background: var(--accent); border: none; color: white; }
+    .btn-primary:hover { background: #6b8fff; }
+    .btn svg { width: 14px; height: 14px; }
+
+    /* ── Content ── */
+    .content { padding: 28px 32px; }
+
+    /* ── Scenario Bar ── */
+    .scenario-bar {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 16px 20px;
+      display: flex; align-items: center; gap: 20px; flex-wrap: wrap;
+      margin-bottom: 24px;
+    }
+    .scenario-label { font-size: 12px; font-weight: 500; color: var(--text2); text-transform: uppercase; letter-spacing: 0.07em; white-space: nowrap; }
+    .slider-wrap { display: flex; align-items: center; gap: 12px; flex: 1; min-width: 200px; }
+    input[type=range] {
+      -webkit-appearance: none; appearance: none;
+      flex: 1; height: 4px;
+      background: var(--surface2);
+      border-radius: 2px; outline: none; cursor: pointer;
+    }
+    input[type=range]::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      width: 16px; height: 16px;
+      background: var(--accent);
+      border-radius: 50%;
+      box-shadow: 0 0 0 3px rgba(79,125,255,0.25);
+      cursor: pointer;
+      transition: box-shadow 0.15s;
+    }
+    input[type=range]::-webkit-slider-thumb:hover { box-shadow: 0 0 0 5px rgba(79,125,255,0.35); }
+    .slider-val { font-family: 'Syne', sans-serif; font-size: 16px; font-weight: 700; color: var(--accent); min-width: 52px; }
+
+    /* ── Metrics ── */
+    .metrics { display: grid; grid-template-columns: repeat(4, minmax(0,1fr)); gap: 14px; margin-bottom: 24px; }
+    .metric-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 18px 20px;
+      position: relative;
+      overflow: hidden;
+      transition: border-color 0.2s;
+    }
+    .metric-card:hover { border-color: var(--border2); }
+    .metric-card::after {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 2px;
+      border-radius: 14px 14px 0 0;
+    }
+    .metric-card.c-blue::after { background: var(--accent); }
+    .metric-card.c-red::after { background: var(--red); }
+    .metric-card.c-amber::after { background: var(--amber); }
+    .metric-card.c-green::after { background: var(--green); }
+    .metric-icon {
+      width: 34px; height: 34px;
+      border-radius: 9px;
+      display: flex; align-items: center; justify-content: center;
+      margin-bottom: 12px;
+    }
+    .metric-icon svg { width: 17px; height: 17px; }
+    .metric-label { font-size: 11px; color: var(--text3); text-transform: uppercase; letter-spacing: 0.09em; margin-bottom: 6px; }
+    .metric-value { font-family: 'Syne', sans-serif; font-size: 28px; font-weight: 700; line-height: 1; }
+    .metric-sub { font-size: 11px; color: var(--text3); margin-top: 5px; }
+
+    /* ── Tabs ── */
+    .tabs-bar { display: flex; gap: 2px; margin-bottom: 20px; background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 4px; width: fit-content; }
+    .tab-btn { padding: 7px 18px; border-radius: 7px; font-size: 13px; font-weight: 500; cursor: pointer; border: none; background: transparent; color: var(--text2); font-family: 'DM Sans', sans-serif; transition: all 0.15s; }
+    .tab-btn.active { background: var(--surface2); color: var(--text); border: 1px solid var(--border2); }
+
+    /* ── Toolbar ── */
+    .toolbar { display: flex; align-items: center; gap: 8px; margin-bottom: 14px; flex-wrap: wrap; }
+    .search-wrap { position: relative; }
+    .search-wrap svg { position: absolute; left: 10px; top: 50%; transform: translateY(-50%); width: 14px; height: 14px; color: var(--text3); pointer-events: none; }
+    .search-wrap input {
+      background: var(--surface); border: 1px solid var(--border); border-radius: 8px;
+      color: var(--text); font-size: 13px; font-family: 'DM Sans', sans-serif;
+      padding: 8px 12px 8px 32px; width: 220px; outline: none;
+      transition: border-color 0.15s;
+    }
+    .search-wrap input:focus { border-color: rgba(79,125,255,0.5); }
+    .search-wrap input::placeholder { color: var(--text3); }
+    select {
+      background: var(--surface); border: 1px solid var(--border); border-radius: 8px;
+      color: var(--text2); font-size: 13px; font-family: 'DM Sans', sans-serif;
+      padding: 8px 12px; outline: none; cursor: pointer; transition: border-color 0.15s;
+      -webkit-appearance: none; appearance: none;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23545b6b' stroke-width='2'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+      background-repeat: no-repeat; background-position: right 10px center;
+      padding-right: 30px;
+    }
+    select:focus { border-color: rgba(79,125,255,0.5); }
+    .toolbar-spacer { flex: 1; }
+    .result-count { font-size: 12px; color: var(--text3); }
+
+    /* ── Table ── */
+    .table-card { background: var(--surface); border: 1px solid var(--border); border-radius: 14px; overflow: hidden; }
+    table { width: 100%; border-collapse: collapse; }
+    thead th {
+      padding: 12px 16px;
+      text-align: left;
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--text3);
+      text-transform: uppercase;
+      letter-spacing: 0.09em;
+      border-bottom: 1px solid var(--border);
+      background: var(--surface2);
+      cursor: pointer;
+      user-select: none;
+      white-space: nowrap;
+    }
+    thead th:hover { color: var(--text2); }
+    thead th .sort-arrow { opacity: 0.4; margin-left: 4px; display: inline-block; }
+    thead th.sorted .sort-arrow { opacity: 1; color: var(--accent); }
+    tbody td { padding: 13px 16px; border-bottom: 1px solid var(--border); vertical-align: middle; font-size: 13px; }
+    tbody tr:last-child td { border-bottom: none; }
+    tbody tr { transition: background 0.1s; }
+    tbody tr:hover td { background: rgba(255,255,255,0.02); }
+
+    .emp-cell { display: flex; align-items: center; gap: 10px; }
+    .avatar {
+      width: 32px; height: 32px; border-radius: 10px;
+      display: flex; align-items: center; justify-content: center;
+      font-family: 'Syne', sans-serif; font-size: 11px; font-weight: 700;
+      flex-shrink: 0;
+    }
+    .emp-name { font-size: 13px; font-weight: 500; color: var(--text); }
+    .emp-skill { font-size: 11px; color: var(--text3); margin-top: 1px; }
+
+    .badge {
+      display: inline-flex; align-items: center; gap: 5px;
+      padding: 4px 10px; border-radius: 20px;
+      font-size: 11px; font-weight: 600;
+      white-space: nowrap;
+    }
+    .badge::before { content: ''; width: 5px; height: 5px; border-radius: 50%; flex-shrink: 0; }
+    .badge-red { background: rgba(255,77,106,0.12); color: var(--red); }
+    .badge-red::before { background: var(--red); }
+    .badge-amber { background: rgba(255,181,71,0.12); color: var(--amber); }
+    .badge-amber::before { background: var(--amber); }
+    .badge-blue { background: rgba(79,125,255,0.12); color: var(--accent); }
+    .badge-blue::before { background: var(--accent); }
+    .badge-purple { background: rgba(167,139,250,0.12); color: var(--purple); }
+    .badge-purple::before { background: var(--purple); }
+    .badge-green { background: rgba(61,214,140,0.12); color: var(--green); }
+    .badge-green::before { background: var(--green); }
+
+    .util-wrap { display: flex; align-items: center; gap: 10px; }
+    .util-bar { width: 80px; height: 4px; background: var(--surface2); border-radius: 2px; overflow: hidden; }
+    .util-fill { height: 100%; border-radius: 2px; transition: width 0.4s; }
+    .util-pct { font-family: 'Syne', sans-serif; font-size: 13px; font-weight: 600; min-width: 42px; }
+
+    .perf-stars { display: flex; gap: 2px; }
+    .star { width: 10px; height: 10px; border-radius: 2px; }
+
+    /* ── Skill Tags ── */
+    .skill-tags { display: flex; flex-wrap: wrap; gap: 4px; }
+    .skill-tag {
+      padding: 3px 8px; border-radius: 6px;
+      font-size: 11px; font-weight: 500;
+    }
+    .skill-tag.has { background: rgba(61,214,140,0.1); color: var(--green); border: 1px solid rgba(61,214,140,0.2); }
+    .skill-tag.missing { background: rgba(255,77,106,0.1); color: var(--red); border: 1px solid rgba(255,77,106,0.2); }
+    .gap-badge {
+      font-family: 'Syne', sans-serif; font-size: 18px; font-weight: 700;
+      width: 36px; height: 36px; border-radius: 10px;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .gap-0 { background: rgba(61,214,140,0.1); color: var(--green); }
+    .gap-1, .gap-2 { background: rgba(255,181,71,0.1); color: var(--amber); }
+    .gap-3, .gap-4, .gap-5 { background: rgba(255,77,106,0.1); color: var(--red); }
+
+    /* ── Charts pane ── */
+    .charts-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px; }
+    .chart-card { background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: 20px; }
+    .chart-card h3 { font-family: 'Syne', sans-serif; font-size: 14px; font-weight: 600; margin-bottom: 16px; color: var(--text); }
+    .chart-card canvas { display: block; }
+
+    /* ── Panes ── */
+    .pane { display: none; }
+    .pane.active { display: block; }
+
+    /* ── Empty state ── */
+    .empty-state { text-align: center; padding: 40px 20px; color: var(--text3); font-size: 13px; }
+
+    /* ── Responsive ── */
+    @media (max-width: 900px) {
+      .sidebar { display: none; }
+      .content { padding: 20px 16px; }
+      .topbar { padding: 14px 16px; }
+      .metrics { grid-template-columns: 1fr 1fr; }
+      .charts-grid { grid-template-columns: 1fr; }
+    }
+    @media (max-width: 500px) {
+      .metrics { grid-template-columns: 1fr; }
+    }
+
+    /* Loading spinner */
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .spinner { width: 20px; height: 20px; border: 2px solid var(--border2); border-top-color: var(--accent); border-radius: 50%; animation: spin 0.7s linear infinite; margin: 0 auto 8px; }
+
+    /* Fade in rows */
+    @keyframes fadeUp { from { opacity:0; transform:translateY(6px);} to { opacity:1; transform:none; } }
+    tbody tr { animation: fadeUp 0.2s both; }
+  </style>
+</head>
+<body>
+<div class="layout">
+
+  <!-- Sidebar -->
+  <aside class="sidebar">
+    <div class="logo">
+      <div class="logo-mark">
+        <svg viewBox="0 0 24 24"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
+      </div>
+      <div class="logo-name">WorkforceIQ</div>
+      <div class="logo-sub">v2.0 — Risk Platform</div>
+    </div>
+
+    <div class="nav-section">
+      <div class="nav-label">Platform</div>
+      <div class="nav-item active" onclick="switchTab('predictions',this)" data-tab="predictions">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+        Predictions
+        <span class="nav-badge" id="riskBadge">—</span>
+      </div>
+      <div class="nav-item" onclick="switchTab('skills',this)" data-tab="skills">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9M16.5 3.5a2.121 2.121 0 013 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+        Skill Gaps
+      </div>
+      <div class="nav-item" onclick="switchTab('charts',this)" data-tab="charts">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+        Analytics
+      </div>
+    </div>
+
+    <div class="sidebar-footer">
+      <span class="status-dot"></span>
+      <span>API connected</span>
+    </div>
+  </aside>
+
+  <!-- Main -->
+  <div class="main">
+    <!-- Topbar -->
+    <div class="topbar">
+      <div class="topbar-left">
+        <div class="topbar-title" id="pageTitle">Predictions &amp; Risks</div>
+        <div class="topbar-sub">Real-time workforce capacity analysis</div>
+      </div>
+      <div class="topbar-right">
+        <button class="btn btn-ghost" onclick="exportCSV()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg>
+          Export
+        </button>
+        <button class="btn btn-primary" onclick="refreshAll()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 11-2.12-9.36L23 10"/></svg>
+          Refresh
+        </button>
+      </div>
+    </div>
+
+    <div class="content">
+
+      <!-- Scenario Bar -->
+      <div class="scenario-bar">
+        <div class="scenario-label">Scenario Planner</div>
+        <div class="slider-wrap">
+          <span style="font-size:12px;color:var(--text3)">80%</span>
+          <input type="range" id="multSlider" min="80" max="160" step="5" value="110" oninput="updateMult(this.value)">
+          <span style="font-size:12px;color:var(--text3)">160%</span>
+        </div>
+        <div class="slider-val" id="multVal">+10%</div>
+        <button class="btn btn-primary" onclick="applyScenario()" style="padding:8px 18px;">Run Scenario</button>
+      </div>
+
+      <!-- Metrics -->
+      <div class="metrics">
+        <div class="metric-card c-blue">
+          <div class="metric-icon" style="background:rgba(79,125,255,0.12)">
+            <svg viewBox="0 0 24 24" fill="none" stroke="#4f7dff" stroke-width="2"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75"/></svg>
+          </div>
+          <div class="metric-label">Total Employees</div>
+          <div class="metric-value" id="m-total" style="color:var(--accent)">—</div>
+          <div class="metric-sub" id="m-total-sub">loading…</div>
+        </div>
+        <div class="metric-card c-red">
+          <div class="metric-icon" style="background:rgba(255,77,106,0.12)">
+            <svg viewBox="0 0 24 24" fill="none" stroke="#ff4d6a" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+          </div>
+          <div class="metric-label">High Risk</div>
+          <div class="metric-value" id="m-highrisk" style="color:var(--red)">—</div>
+          <div class="metric-sub">need immediate attention</div>
+        </div>
+        <div class="metric-card c-amber">
+          <div class="metric-icon" style="background:rgba(255,181,71,0.12)">
+            <svg viewBox="0 0 24 24" fill="none" stroke="#ffb547" stroke-width="2"><line x1="12" y1="20" x2="12" y2="10"/><line x1="18" y1="20" x2="18" y2="4"/><line x1="6" y1="20" x2="6" y2="16"/></svg>
+          </div>
+          <div class="metric-label">Avg Utilization</div>
+          <div class="metric-value" id="m-avgutil" style="color:var(--amber)">—</div>
+          <div class="metric-sub">predicted workload</div>
+        </div>
+        <div class="metric-card c-green">
+          <div class="metric-icon" style="background:rgba(61,214,140,0.12)">
+            <svg viewBox="0 0 24 24" fill="none" stroke="#3dd68c" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+          </div>
+          <div class="metric-label">Total Skill Gaps</div>
+          <div class="metric-value" id="m-gaps" style="color:var(--green)">—</div>
+          <div class="metric-sub">missing required skills</div>
+        </div>
+      </div>
+
+      <!-- Tabs -->
+      <div class="tabs-bar">
+        <button class="tab-btn active" onclick="switchTab('predictions',this)" data-tab="predictions">Predictions &amp; Risks</button>
+        <button class="tab-btn" onclick="switchTab('skills',this)" data-tab="skills">Skill Gap Analysis</button>
+        <button class="tab-btn" onclick="switchTab('charts',this)" data-tab="charts">Analytics</button>
+      </div>
+
+      <!-- PANE: Predictions -->
+      <div class="pane active" id="pane-predictions">
+        <div class="toolbar">
+          <div class="search-wrap">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+            <input type="text" id="searchPred" placeholder="Search name or department…" oninput="renderPredictions()">
+          </div>
+          <select id="filterRisk" onchange="renderPredictions()">
+            <option value="">All risks</option>
+            <option>High Risk</option>
+            <option>Overloaded</option>
+            <option>Underutilized</option>
+            <option>Skill Mismatch</option>
+            <option>Normal</option>
+          </select>
+          <select id="filterDept" onchange="renderPredictions()">
+            <option value="">All departments</option>
+          </select>
+          <select id="sortPred" onchange="renderPredictions()">
+            <option value="pred-desc">Utilization ↓</option>
+            <option value="pred-asc">Utilization ↑</option>
+            <option value="perf-desc">Performance ↓</option>
+            <option value="name-asc">Name A–Z</option>
+          </select>
+          <div class="toolbar-spacer"></div>
+          <span class="result-count" id="predCount"></span>
+        </div>
+        <div class="table-card">
+          <table>
+            <thead>
+              <tr>
+                <th onclick="setSortPred('name-asc')">Employee <span class="sort-arrow">↕</span></th>
+                <th>Department</th>
+                <th>Skill</th>
+                <th onclick="setSortPred('pred-desc')">Utilization <span class="sort-arrow">↕</span></th>
+                <th>Risk</th>
+                <th onclick="setSortPred('perf-desc')">Performance <span class="sort-arrow">↕</span></th>
+              </tr>
+            </thead>
+            <tbody id="predTbody">
+              <tr><td colspan="6"><div class="empty-state"><div class="spinner"></div>Loading predictions…</div></td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- PANE: Skills -->
+      <div class="pane" id="pane-skills">
+        <div class="toolbar">
+          <div class="search-wrap">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+            <input type="text" id="searchSkill" placeholder="Search employee…" oninput="renderSkills()">
+          </div>
+          <select id="filterGaps" onchange="renderSkills()">
+            <option value="">All employees</option>
+            <option value="1">Has gaps</option>
+            <option value="0">No gaps</option>
+          </select>
+          <select id="sortSkills" onchange="renderSkills()">
+            <option value="gap-desc">Most gaps ↓</option>
+            <option value="gap-asc">Fewest gaps ↑</option>
+            <option value="name-asc">Name A–Z</option>
+          </select>
+          <div class="toolbar-spacer"></div>
+          <span class="result-count" id="skillCount"></span>
+        </div>
+        <div class="table-card">
+          <table>
+            <thead>
+              <tr>
+                <th>Employee</th>
+                <th>Has Skills</th>
+                <th>Missing Skills</th>
+                <th style="text-align:right">Gap Count</th>
+              </tr>
+            </thead>
+            <tbody id="skillTbody">
+              <tr><td colspan="4"><div class="empty-state"><div class="spinner"></div>Loading skill gaps…</div></td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- PANE: Charts -->
+      <div class="pane" id="pane-charts">
+        <div class="charts-grid">
+          <div class="chart-card">
+            <h3>Risk Distribution</h3>
+            <div style="position:relative;height:220px"><canvas id="riskChart"></canvas></div>
+          </div>
+          <div class="chart-card">
+            <h3>Avg Utilization by Department</h3>
+            <div style="position:relative;height:220px"><canvas id="deptChart"></canvas></div>
+          </div>
+        </div>
+        <div class="chart-card">
+          <h3>Performance vs. Utilization</h3>
+          <div style="position:relative;height:280px"><canvas id="scatterChart"></canvas></div>
+        </div>
+      </div>
+
+    </div><!-- /content -->
+  </div><!-- /main -->
+</div><!-- /layout -->
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<script>
+  let predData = [], skillData = [], currentMult = 1.1;
+  let riskChartInst, deptChartInst, scatterChartInst;
+
+  const AVATAR_COLORS = [
+    ['rgba(79,125,255,0.15)','#4f7dff'],
+    ['rgba(124,92,252,0.15)','#7c5cfc'],
+    ['rgba(61,214,140,0.15)','#3dd68c'],
+    ['rgba(255,181,71,0.15)','#ffb547'],
+    ['rgba(45,212,191,0.15)','#2dd4bf'],
+    ['rgba(255,77,106,0.15)','#ff4d6a'],
+    ['rgba(167,139,250,0.15)','#a78bfa'],
+  ];
+
+  function avatarColor(name) {
+    const i = (name.charCodeAt(0) + (name.charCodeAt(1)||0)) % AVATAR_COLORS.length;
+    return AVATAR_COLORS[i];
+  }
+
+  function initials(name) {
+    return name.split(' ').map(p=>p[0]).slice(0,2).join('').toUpperCase();
+  }
+
+  function riskClass(risk) {
+    return {
+      'High Risk':'badge-red','Overloaded':'badge-amber',
+      'Underutilized':'badge-blue','Skill Mismatch':'badge-purple','Normal':'badge-green'
+    }[risk] || 'badge-green';
+  }
+
+  function utilColor(pct) {
+    if (pct > 130) return '#ff4d6a';
+    if (pct > 100) return '#ffb547';
+    if (pct < 50) return '#4f7dff';
+    return '#3dd68c';
+  }
+
+  function perfStars(score) {
+    const filled = Math.round(score);
+    let html = '<div class="perf-stars">';
+    for(let i=1;i<=5;i++) {
+      const c = i<=filled ? '#ffb547' : 'rgba(255,255,255,0.1)';
+      html += `<div class="star" style="background:${c}"></div>`;
+    }
+    return html + `</div><span style="font-size:11px;color:var(--text3);margin-left:6px">${parseFloat(score).toFixed(1)}</span>`;
+  }
+
+  async function loadPredictions(mult) {
+    const url = mult === 1.1 ? '/predict' : `/predict?multiplier=${mult}`;
+    try {
+      const r = await fetch(url);
+      predData = await r.json();
+    } catch(e) {
+      // Demo data fallback
+      predData = generateDemoData(mult);
+    }
+    updateMetrics();
+    renderPredictions();
+    if(document.getElementById('pane-charts').classList.contains('active')) renderCharts();
+    document.getElementById('riskBadge').textContent = predData.filter(d=>d.risk==='High Risk').length;
+  }
+
+  async function loadSkills() {
+    try {
+      const r = await fetch('/skills');
+      skillData = await r.json();
+    } catch(e) {
+      skillData = generateDemoSkills();
+    }
+    renderSkills();
+    updateMetrics();
+  }
+
+  function generateDemoData(mult=1.1) {
+    const names=['Alice Chen','Bob Martinez','Carol White','David Kim','Eva Singh','Frank Liu','Grace Park','Henry Osei','Iris Jain','James Nkosi','Karen Patel','Liam Torres'];
+    const depts=['Engineering','Design','Data Science','Product','DevOps','QA'];
+    const skills=['Python','JavaScript','Java','SQL','C#','React','Docker','Kubernetes','Machine Learning','TypeScript'];
+    const risks=['High Risk','Overloaded','Underutilized','Skill Mismatch','Normal','Normal','Normal'];
+    return names.map((name,i)=>{
+      const base=40+Math.random()*80;
+      const pred=Math.round(base*mult*10)/10;
+      const risk=pred>130?'High Risk':pred>100?'Overloaded':pred<50?'Underutilized':pred<70&&i%3===0?'Skill Mismatch':'Normal';
+      return {name,skill:skills[i%skills.length],department:depts[i%depts.length],prediction:pred,risk,performance_score:(2.5+Math.random()*2.5).toFixed(1)};
+    });
+  }
+
+  function generateDemoSkills() {
+    const required=['Python','SQL','Java','JavaScript','C#'];
+    return predData.map(emp=>{
+      const has=[emp.skill,...required.filter(()=>Math.random()>0.5)];
+      const unique=[...new Set(has)];
+      const missing=required.filter(s=>!unique.includes(s));
+      return {name:emp.name,has_skills:unique,missing_skills:missing,count:missing.length};
+    });
+  }
+
+  function updateMetrics() {
+    if(predData.length) {
+      document.getElementById('m-total').textContent = predData.length;
+      document.getElementById('m-total-sub').textContent = [...new Set(predData.map(d=>d.department))].length + ' departments';
+      document.getElementById('m-highrisk').textContent = predData.filter(d=>d.risk==='High Risk'||d.risk==='Overloaded').length;
+      const avg = predData.reduce((s,d)=>s+d.prediction,0)/predData.length;
+      document.getElementById('m-avgutil').textContent = Math.round(avg)+'%';
+    }
+    if(skillData.length) {
+      document.getElementById('m-gaps').textContent = skillData.reduce((s,d)=>s+d.count,0);
+    }
+  }
+
+  function renderPredictions() {
+    const search = document.getElementById('searchPred').value.toLowerCase();
+    const rFilter = document.getElementById('filterRisk').value;
+    const dFilter = document.getElementById('filterDept').value;
+    const sort = document.getElementById('sortPred').value;
+
+    // Populate dept dropdown
+    if(document.getElementById('filterDept').options.length<=1) {
+      const depts=[...new Set(predData.map(d=>d.department))].sort();
+      const sel=document.getElementById('filterDept');
+      depts.forEach(d=>{const o=document.createElement('option');o.textContent=d;sel.appendChild(o);});
+    }
+
+    let rows=[...predData];
+    if(search) rows=rows.filter(r=>r.name.toLowerCase().includes(search)||r.department.toLowerCase().includes(search));
+    if(rFilter) rows=rows.filter(r=>r.risk===rFilter);
+    if(dFilter) rows=rows.filter(r=>r.department===dFilter);
+    if(sort==='pred-desc') rows.sort((a,b)=>b.prediction-a.prediction);
+    else if(sort==='pred-asc') rows.sort((a,b)=>a.prediction-b.prediction);
+    else if(sort==='perf-desc') rows.sort((a,b)=>b.performance_score-a.performance_score);
+    else rows.sort((a,b)=>a.name.localeCompare(b.name));
+
+    document.getElementById('predCount').textContent = rows.length+' employees';
+
+    const tbody=document.getElementById('predTbody');
+    if(!rows.length){tbody.innerHTML='<tr><td colspan="6"><div class="empty-state">No results match your filters.</div></td></tr>';return;}
+
+    tbody.innerHTML=rows.map((emp,i)=>{
+      const [bg,fg]=avatarColor(emp.name);
+      const bar=Math.min(emp.prediction,150);
+      const uc=utilColor(emp.prediction);
+      return `<tr style="animation-delay:${i*0.03}s">
+        <td><div class="emp-cell">
+          <div class="avatar" style="background:${bg};color:${fg}">${initials(emp.name)}</div>
+          <div><div class="emp-name">${emp.name}</div></div>
+        </div></td>
+        <td style="color:var(--text2)">${emp.department}</td>
+        <td style="color:var(--text3);font-size:12px">${emp.skill}</td>
+        <td><div class="util-wrap">
+          <div class="util-bar"><div class="util-fill" style="width:${bar/1.5}%;background:${uc}"></div></div>
+          <span class="util-pct" style="color:${uc}">${emp.prediction}%</span>
+        </div></td>
+        <td><span class="badge ${riskClass(emp.risk)}">${emp.risk}</span></td>
+        <td><div style="display:flex;align-items:center">${perfStars(emp.performance_score)}</div></td>
+      </tr>`;
+    }).join('');
+  }
+
+  function renderSkills() {
+    const search=document.getElementById('searchSkill').value.toLowerCase();
+    const gFilter=document.getElementById('filterGaps').value;
+    const sort=document.getElementById('sortSkills').value;
+
+    let rows=[...skillData];
+    if(search) rows=rows.filter(r=>r.name.toLowerCase().includes(search));
+    if(gFilter==='1') rows=rows.filter(r=>r.count>0);
+    if(gFilter==='0') rows=rows.filter(r=>r.count===0);
+    if(sort==='gap-desc') rows.sort((a,b)=>b.count-a.count);
+    else if(sort==='gap-asc') rows.sort((a,b)=>a.count-b.count);
+    else rows.sort((a,b)=>a.name.localeCompare(b.name));
+
+    document.getElementById('skillCount').textContent=rows.length+' employees';
+
+    const tbody=document.getElementById('skillTbody');
+    if(!rows.length){tbody.innerHTML='<tr><td colspan="4"><div class="empty-state">No results match your filters.</div></td></tr>';return;}
+
+    tbody.innerHTML=rows.map((emp,i)=>{
+      const [bg,fg]=avatarColor(emp.name);
+      const gc='gap-'+Math.min(emp.count,5);
+      return `<tr style="animation-delay:${i*0.03}s">
+        <td><div class="emp-cell">
+          <div class="avatar" style="background:${bg};color:${fg}">${initials(emp.name)}</div>
+          <div class="emp-name">${emp.name}</div>
+        </div></td>
+        <td><div class="skill-tags">${emp.has_skills.map(s=>`<span class="skill-tag has">${s}</span>`).join('')}</div></td>
+        <td><div class="skill-tags">${emp.missing_skills.length?emp.missing_skills.map(s=>`<span class="skill-tag missing">${s}</span>`).join(''):'<span style="color:var(--text3);font-size:12px">None</span>'}</div></td>
+        <td style="text-align:right"><div class="${gc} gap-badge" style="margin-left:auto">${emp.count}</div></td>
+      </tr>`;
+    }).join('');
+  }
+
+  function renderCharts() {
+    if(!predData.length) return;
+
+    const riskCounts={};
+    predData.forEach(d=>{riskCounts[d.risk]=(riskCounts[d.risk]||0)+1;});
+    const riskColors={'High Risk':'#ff4d6a','Overloaded':'#ffb547','Underutilized':'#4f7dff','Skill Mismatch':'#a78bfa','Normal':'#3dd68c'};
+
+    if(riskChartInst) riskChartInst.destroy();
+    riskChartInst=new Chart(document.getElementById('riskChart'),{
+      type:'doughnut',
+      data:{labels:Object.keys(riskCounts),datasets:[{data:Object.values(riskCounts),backgroundColor:Object.keys(riskCounts).map(k=>riskColors[k]||'#545b6b'),borderWidth:0,hoverOffset:4}]},
+      options:{responsive:true,maintainAspectRatio:false,cutout:'68%',plugins:{legend:{position:'right',labels:{color:'#8b91a0',font:{size:11},boxWidth:10,padding:10}}}}
+    });
+
+    const depts=[...new Set(predData.map(d=>d.department))];
+    const deptAvg=depts.map(dept=>{
+      const vals=predData.filter(d=>d.department===dept).map(d=>d.prediction);
+      return Math.round(vals.reduce((a,b)=>a+b,0)/vals.length);
+    });
+
+    if(deptChartInst) deptChartInst.destroy();
+    deptChartInst=new Chart(document.getElementById('deptChart'),{
+      type:'bar',
+      data:{labels:depts,datasets:[{data:deptAvg,backgroundColor:deptAvg.map(v=>v>100?'rgba(255,77,106,0.7)':v>80?'rgba(255,181,71,0.7)':'rgba(61,214,140,0.7)'),borderRadius:5,borderWidth:0}]},
+      options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{ticks:{color:'#545b6b',font:{size:11}},grid:{display:false}},y:{ticks:{color:'#545b6b',font:{size:11}},grid:{color:'rgba(255,255,255,0.04)'}}}}
+    });
+
+    if(scatterChartInst) scatterChartInst.destroy();
+    scatterChartInst=new Chart(document.getElementById('scatterChart'),{
+      type:'scatter',
+      data:{datasets:[{label:'Employees',data:predData.map(d=>({x:parseFloat(d.performance_score),y:d.prediction,name:d.name})),backgroundColor:predData.map(d=>riskColors[d.risk]||'#3dd68c')+'cc',pointRadius:6,pointHoverRadius:9}]},
+      options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>`${ctx.raw.name}: ${ctx.raw.x} perf, ${ctx.raw.y}% util`}}},scales:{x:{title:{display:true,text:'Performance Score',color:'#545b6b',font:{size:11}},ticks:{color:'#545b6b'},grid:{color:'rgba(255,255,255,0.04)'}},y:{title:{display:true,text:'Utilization %',color:'#545b6b',font:{size:11}},ticks:{color:'#545b6b'},grid:{color:'rgba(255,255,255,0.04)'}}}}
+    });
+  }
+
+  function switchTab(tab, el) {
+    document.querySelectorAll('.pane').forEach(p=>p.classList.remove('active'));
+    document.getElementById('pane-'+tab).classList.add('active');
+    document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
+    document.querySelectorAll('.nav-item').forEach(b=>b.classList.remove('active'));
+    if(el) {
+      if(el.classList.contains('tab-btn')) el.classList.add('active');
+      if(el.classList.contains('nav-item')) el.classList.add('active');
+      // Sync both sets
+      document.querySelectorAll(`[data-tab="${tab}"]`).forEach(b=>b.classList.add('active'));
+    }
+    const titles={predictions:'Predictions & Risks',skills:'Skill Gap Analysis',charts:'Analytics'};
+    document.getElementById('pageTitle').textContent=titles[tab]||tab;
+    if(tab==='charts') renderCharts();
+  }
+
+  function updateMult(val) {
+    const pct=val-100;
+    document.getElementById('multVal').textContent=(pct>=0?'+':'')+pct+'%';
+  }
+
+  function applyScenario() {
+    currentMult=parseInt(document.getElementById('multSlider').value)/100;
+    loadPredictions(currentMult);
+  }
+
+  function setSortPred(val) {
+    document.getElementById('sortPred').value=val;
+    renderPredictions();
+  }
+
+  function refreshAll() {
+    loadPredictions(currentMult);
+    loadSkills();
+  }
+
+  function exportCSV() {
+    if(!predData.length) return;
+    const cols=['name','skill','department','prediction','risk','performance_score'];
+    const rows=[cols.join(','),...predData.map(r=>cols.map(c=>r[c]).join(','))].join('\n');
+    const a=document.createElement('a');
+    a.href='data:text/csv;charset=utf-8,'+encodeURIComponent(rows);
+    a.download='workforce_predictions.csv'; a.click();
+  }
+
+  // Init
+  loadPredictions(1.1);
+  loadSkills();
+</script>
+</body>
+</html>
